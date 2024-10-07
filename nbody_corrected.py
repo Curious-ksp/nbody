@@ -34,9 +34,9 @@ positions = np.array([body["position"] for body in bodies])
 velocities = np.array([body["velocity"] for body in bodies])
 
 ### Time
-dt = 0.01*day # time steps in seconds
+dt = 0.1*day # time steps in seconds
 t = 0
-run_time = 200*day
+run_time = 1000*day
 time_array = np.arange(0, run_time+dt, dt)
 
 past_positions = [positions.copy()]
@@ -63,20 +63,12 @@ def eq_motion(positions, velocities, masses):
 
 ### Equation of Motion Solver!
 def solver(positions, velocities, masses, dt):
-    k1v = eq_motion(positions, velocities, masses)
-    k1r = velocities
-
-    k2v = eq_motion(positions + 0.5 * k1r * dt, velocities + 0.5 * k1v * dt, masses)
-    k2r = velocities + 0.5 * k1v * dt
-
-    k3v = eq_motion(positions + 0.5 * k2r * dt, velocities + 0.5 * k2v * dt, masses)
-    k3r = velocities + 0.5 * k2v * dt
-
-    k4v = eq_motion(positions + k3r * dt, velocities + k3v * dt, masses)
-    k4r = velocities + k3v * dt
-
-    new_positions = positions + (k1r + 2 * k2r + 2 * k3r + k4r) * (dt / 6)
-    new_velocities = velocities + (k1v + 2 * k2v + 2 * k3v + k4v) * (dt / 6)
+    # Compute accelerations (from equations of motion)
+    acc = eq_motion(positions, velocities, masses)
+    
+    # Update positions and velocities
+    new_positions = positions + velocities * dt
+    new_velocities = velocities + acc * dt
 
     return new_positions, new_velocities
 
@@ -104,7 +96,7 @@ border = 2*AU
 
 
 # Plot
-colors = ['yellow','blue']  
+colors = ['orange','blue']  
 fig, ax = plt.subplots(dpi=150, figsize=(6, 6))  # Adjust DPI and figsize for performance
 
 lines = []
@@ -144,7 +136,6 @@ ax.legend(loc='upper left', fontsize=8)
 
 # Use reduced frames to speed up the processc
 ani = animation.FuncAnimation(fig, update, frames=range(0, len(time_values), 200), init_func=init, interval=10, repeat=False)
-
 
 
 
